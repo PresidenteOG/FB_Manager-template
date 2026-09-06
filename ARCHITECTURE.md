@@ -4,6 +4,16 @@ Built an Android app that signs an admin into a Firebase-backed console, lists c
 in real time, and notifies them when a new one shows up — using Kotlin, Jetpack Compose and
 Firebase Realtime Database.
 
+An admin signs in with email and password, lands on a list of every device registered under the
+Firebase project, and that list updates the moment a device's status changes elsewhere — no
+refresh needed, because it's reading a live `Flow` off the Realtime Database. When a brand-new
+device shows up, the app fires a local notification so the admin doesn't have to be staring at the
+screen to notice.
+
+**Why Kotlin + Jetpack Compose**: this is Google's current recommended stack for native Android —
+Compose replaces the older View/XML layout system with declarative UI, which is what most new
+Android code and most tutorials use today.
+
 ## Structure
 
 Clean-architecture-ish split, MVVM on top:
