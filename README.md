@@ -9,12 +9,19 @@
 An Android console for a Firebase-backed device fleet: sign in, see connected devices update in
 real time, get notified when a new one appears.
 
-## Screenshot
+## Showcase
 
-No screenshot included. This app needs its own Firebase project to run (see
-[SETUP.md](./SETUP.md)) — a screenshot without a real backend behind it would show an empty or
-broken screen, which would misrepresent what the app actually does. Set up your own Firebase
-project and run it to see it working.
+Real screenshots from the app running on a physical device, not the Firebase console.
+
+![Sign-in screen: email and password fields under "Iniciar sesión / Administrador Firebase"](./docs/sign-in.jpg) | ![Live validation: "The email address is badly formatted" shown under the password field](./docs/validation-error.jpg) | ![Empty device list: 0 total / 0 active / 0 blocked / 0 expired, "Sin dispositivos registrados"](./docs/empty-state.jpg)
+:---:|:---:|:---:
+Sign-in screen | Real-time field validation | Empty device list
+
+These three screens run without a live backend behind them, which is why they're the ones shown:
+sign-in, its own input validation, and the list's empty state. The populated device list only
+renders once real devices are talking to a real Firebase project — that's the one screen this
+template can't show without also showing someone's live production data, so it's left out on
+purpose rather than faked or blurred.
 
 ## Setup
 

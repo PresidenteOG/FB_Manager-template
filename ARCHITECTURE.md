@@ -10,6 +10,8 @@ refresh needed, because it's reading a live `Flow` off the Realtime Database. Wh
 device shows up, the app fires a local notification so the admin doesn't have to be staring at the
 screen to notice.
 
+![FB_Manager architecture: Compose UI calls domain interfaces, implemented by AuthRepository and DeviceRepositoryImpl, backed by your own Firebase project](./docs/architecture.png)
+
 **Why Kotlin + Jetpack Compose**: this is Google's current recommended stack for native Android —
 Compose replaces the older View/XML layout system with declarative UI, which is what most new
 Android code and most tutorials use today.
@@ -47,4 +49,6 @@ Anyone using this template creates their own free Firebase project, drops in the
 ## Running it
 
 Follow [SETUP.md](./SETUP.md) first, then build normally (`./gradlew assembleDebug` or via
-Android Studio).
+Android Studio). Verified: `./gradlew assembleDebug` compiles and packages a debug APK cleanly
+against a placeholder `google-services.json` matching [SETUP.md](./SETUP.md)'s shape — the code
+itself builds; the only thing missing to run it for real is your own Firebase project.
