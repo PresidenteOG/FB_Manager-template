@@ -23,6 +23,12 @@ renders once real devices are talking to a real Firebase project — that's the 
 template can't show without also showing someone's live production data, so it's left out on
 purpose rather than faked or blurred.
 
+### Architecture
+
+![FB_Manager architecture: Compose UI calls domain interfaces, implemented by AuthRepository and DeviceRepositoryImpl, backed by your own Firebase project](./docs/architecture.png)
+
+Full breakdown in [ARCHITECTURE.md](./ARCHITECTURE.md).
+
 ## Setup
 
 See [SETUP.md](./SETUP.md) — you'll need your own free Firebase project.
