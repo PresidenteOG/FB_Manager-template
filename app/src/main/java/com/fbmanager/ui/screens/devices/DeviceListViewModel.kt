@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fbmanager.data.auth.AuthRepository
-import com.fbmanager.data.firebase.DeviceRepositoryImpl
 import com.fbmanager.domain.model.DeviceNode
 import com.fbmanager.domain.repository.DeviceRepository
 import com.fbmanager.notification.NotificationHelper
@@ -32,7 +31,6 @@ private const val KEY_NOTIF_NEW_DEVICES = "notif_new_devices"
 class DeviceListViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val deviceRepository: DeviceRepository,
-    private val deviceRepositoryImpl: DeviceRepositoryImpl,
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 
@@ -44,19 +42,12 @@ class DeviceListViewModel @Inject constructor(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Checking)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    private val _showingCache = MutableStateFlow(false)
-    val showingCache: StateFlow<Boolean> = _showingCache.asStateFlow()
-
     /** Whether to fire a local notification when a new device registers. */
     private val _notificationsEnabled = MutableStateFlow(prefs.getBoolean(KEY_NOTIF_NEW_DEVICES, true))
     val notificationsEnabled: StateFlow<Boolean> = _notificationsEnabled.asStateFlow()
 
-    /**
-     * IDs considered "already known" at session start.
-     * Initialized from cache → only truly new registrations during this session trigger alerts.
-     */
-    private val knownIds: MutableSet<String> =
-        deviceRepositoryImpl.loadCache().map { it.id }.toMutableSet()
+    /** IDs already seen this session — only rows that appear after the first load raise an alert. */
+    private val knownIds: MutableSet<String> = mutableSetOf()
     private var initialLoadDone = false
     private val notifCounter = AtomicInteger(1_000)
 
@@ -95,26 +86,16 @@ class DeviceListViewModel @Inject constructor(
         observeJob?.cancel()
         authRepository.signOut()
         _devices.value = emptyList()
-        _showingCache.value = false
         _authState.value = AuthState.NeedsLogin
     }
 
-    fun showCachedData() {
-        _devices.value = deviceRepositoryImpl.loadCache()
-        _showingCache.value = true
-    }
-
-    fun refreshLive() {
-        _showingCache.value = false
-        startObserving()
-    }
+    suspend fun deviceExtras(deviceId: String): String? = deviceRepository.getExtras(deviceId)
 
     private fun startObserving() {
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
             deviceRepository.observeDevices().collect { list ->
                 if (initialLoadDone && _notificationsEnabled.value) {
-                    // Detect genuinely new devices (not in knownIds from session start).
                     list.filter { it.id !in knownIds }.forEach { newDevice ->
                         NotificationHelper.notifyNewDevice(
                             context,
@@ -127,7 +108,6 @@ class DeviceListViewModel @Inject constructor(
                 list.forEach { knownIds.add(it.id) }
                 initialLoadDone = true
                 _devices.value = list
-                _showingCache.value = false
             }
         }
     }

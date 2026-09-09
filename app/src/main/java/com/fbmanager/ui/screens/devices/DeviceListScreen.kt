@@ -2,15 +2,13 @@ package com.fbmanager.ui.screens.devices
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Storage
@@ -27,17 +25,24 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fbmanager.domain.model.DeviceNode
 import com.fbmanager.domain.model.PaymentStatus
+import org.json.JSONArray
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import kotlinx.coroutines.tasks.await
 
 private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 private fun Long.toDateStr(): String = dateFormat.format(Date(this))
+
+private fun JSONArray?.toStringList(): List<String> =
+    if (this == null) emptyList() else (0 until length()).map { optString(it) }
+
+private fun JSONArray?.toTitleArtistList(): List<Pair<String, String>> {
+    if (this == null) return emptyList()
+    return (0 until length()).mapNotNull { i ->
+        optJSONObject(i)?.let { it.optString("title", "—") to it.optString("artist", "—") }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +51,6 @@ fun DeviceListScreen(
 ) {
     val authState by viewModel.authState.collectAsState()
     val devices by viewModel.devices.collectAsState()
-    val showingCache by viewModel.showingCache.collectAsState()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
     var selectedDevice by remember { mutableStateOf<DeviceNode?>(null) }
     var dataDeviceId by remember { mutableStateOf<String?>(null) }
@@ -65,14 +69,8 @@ fun DeviceListScreen(
                                 tint = if (notificationsEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        IconButton(onClick = if (showingCache) viewModel::refreshLive else viewModel::showCachedData) {
-                            Icon(
-                                if (showingCache) Icons.Default.Storage else Icons.Default.CloudOff,
-                                contentDescription = if (showingCache) "Ver en vivo" else "Ver caché",
-                            )
-                        }
                         IconButton(onClick = viewModel::signOut) {
-                            Icon(Icons.Default.Logout, contentDescription = "Cerrar sesión")
+                            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Cerrar sesión")
                         }
                     }
                 },
@@ -82,28 +80,12 @@ fun DeviceListScreen(
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            if (showingCache) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { viewModel.refreshLive() },
-                    color = Color(0xFFFFF9C4),
-                ) {
-                    Text(
-                        "Viendo datos almacenados · Toca para actualizar",
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color(0xFF5D4037),
-                    )
-                }
-            }
-
             when (val state = authState) {
                 AuthState.Checking -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             CircularProgressIndicator()
-                            Text("Conectando...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Cargando...", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -119,7 +101,11 @@ fun DeviceListScreen(
     }
 
     dataDeviceId?.let { id ->
-        DeviceDataDialog(deviceId = id, onDismiss = { dataDeviceId = null })
+        DeviceDataDialog(
+            deviceId = id,
+            loadExtras = viewModel::deviceExtras,
+            onDismiss = { dataDeviceId = null },
+        )
     }
 
     selectedDevice?.let { device ->
@@ -152,7 +138,7 @@ private fun LoginContent(
             ) {
                 Column {
                     Text("Iniciar sesión", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                    Text("Administrador Firebase", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Panel de administración", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 OutlinedTextField(
                     value = email,
@@ -416,9 +402,15 @@ private fun CheckItem(label: String, checked: Boolean) {
 
 
 @Composable
-fun DeviceDataDialog(deviceId: String, onDismiss: () -> Unit) {
+fun DeviceDataDialog(
+    deviceId: String,
+    loadExtras: suspend (String) -> String?,
+    onDismiss: () -> Unit,
+) {
     var loading by remember { mutableStateOf(true) }
-    var statsMap by remember { mutableStateOf<Map<String, Any>?>(null) }
+    var totalMs by remember { mutableStateOf(0L) }
+    var totalTracks by remember { mutableStateOf(0) }
+    var topArtists by remember { mutableStateOf<List<String>>(emptyList()) }
     var favoritesList by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var recentlyPlayedList by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var topStatsList by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
@@ -426,47 +418,18 @@ fun DeviceDataDialog(deviceId: String, onDismiss: () -> Unit) {
     LaunchedEffect(deviceId) {
         loading = true
         try {
-            val ref = FirebaseDatabase.getInstance().getReference("devices/$deviceId")
-            val snapshot = ref.get().await()
-            if (snapshot.exists()) {
-                statsMap = snapshot.child("stats").value as? Map<String, Any>
-                val libStr = snapshot.child("library").getValue(String::class.java)
-                if (!libStr.isNullOrBlank()) {
-                    try {
-                        val json = org.json.JSONObject(libStr)
-                        val favArray = json.optJSONArray("favorites")
-                        val recArray = json.optJSONArray("recentlyPlayed")
-                        
-                        val fList = mutableListOf<Pair<String, String>>()
-                        if (favArray != null) {
-                            for (i in 0 until favArray.length()) {
-                                val item = favArray.getJSONObject(i)
-                                fList.add(Pair(item.optString("title", "Unknown"), item.optString("artist", "Unknown")))
-                            }
-                        }
-                        favoritesList = fList
-                        
-                        val rList = mutableListOf<Pair<String, String>>()
-                        if (recArray != null) {
-                            for (i in 0 until minOf(recArray.length(), 10)) {
-                                val item = recArray.getJSONObject(i)
-                                rList.add(Pair(item.optString("title", "Unknown"), item.optString("artist", "Unknown")))
-                            }
-                        }
-                        recentlyPlayedList = rList
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+            val raw = loadExtras(deviceId)
+            if (!raw.isNullOrBlank()) {
+                val json = JSONObject(raw)
+                val stats = json.optJSONObject("stats")
+                if (stats != null) {
+                    totalMs = stats.optLong("totalListenedMs", 0L)
+                    totalTracks = stats.optInt("totalTracks", 0)
+                    topArtists = stats.optJSONArray("topArtists").toStringList()
+                    topStatsList = stats.optJSONArray("top10Tracks").toTitleArtistList()
                 }
-                
-                val topStatsArray = statsMap?.get("top10Tracks") as? List<Map<String, Any>>
-                val tsList = mutableListOf<Pair<String, String>>()
-                if (topStatsArray != null) {
-                    for (item in topStatsArray) {
-                        tsList.add(Pair(item["title"]?.toString() ?: "Unknown", item["artist"]?.toString() ?: "Unknown"))
-                    }
-                }
-                topStatsList = tsList
+                favoritesList = json.optJSONArray("favorites").toTitleArtistList()
+                recentlyPlayedList = json.optJSONArray("recentlyPlayed").toTitleArtistList().take(10)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -488,9 +451,7 @@ fun DeviceDataDialog(deviceId: String, onDismiss: () -> Unit) {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
-                        val totalMs = (statsMap?.get("totalListenedMs") as? Number)?.toLong() ?: 0L
-                        val totalTracks = (statsMap?.get("totalTracks") as? Number)?.toInt() ?: 0
-                        val artistsList = statsMap?.get("topArtists") as? List<*> ?: emptyList<Any>()
+                        val artistsList = topArtists
 
                         Text("Estadísticas", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(4.dp))

@@ -9,7 +9,7 @@ hilt-navigation      = "1.2.0"
 lifecycle            = "2.8.6"
 activity-compose     = "1.9.3"
 core-ktx             = "1.13.1"
-firebase-bom         = "33.5.1"
+room                 = "2.6.1"
 datastore            = "1.1.1"
 security-crypto      = "1.1.0-alpha06"
 coroutines           = "1.9.0"
@@ -33,16 +33,14 @@ androidx-compose-material3              = { group = "androidx.compose.material3"
 androidx-compose-material-icons         = { group = "androidx.compose.material",      name = "material-icons-extended" }
 androidx-datastore-preferences          = { group = "androidx.datastore",             name = "datastore-preferences",             version.ref = "datastore" }
 androidx-security-crypto                = { group = "androidx.security",              name = "security-crypto",                   version.ref = "security-crypto" }
-firebase-bom                            = { group = "com.google.firebase",            name = "firebase-bom",                      version.ref = "firebase-bom" }
-firebase-database                       = { group = "com.google.firebase",            name = "firebase-database-ktx" }
-firebase-auth                           = { group = "com.google.firebase",            name = "firebase-auth-ktx" }
-firebase-firestore                      = { group = "com.google.firebase",            name = "firebase-firestore" }
-hilt-android                            = { group = "com.google.dagger",              name = "hilt-android",                      version.ref = "hilt" }
+androidx-room-runtime                   = { group = "androidx.room",                  name = "room-runtime",                      version.ref = "room" }
+androidx-room-ktx                       = { group = "androidx.room",                  name = "room-ktx",                          version.ref = "room" }
+androidx-room-compiler                  = { group = "androidx.room",                  name = "room-compiler",                     version.ref = "room" }
+hilt-android                        = { group = "com.google.dagger",              name = "hilt-android",                      version.ref = "hilt" }
 hilt-compiler                           = { group = "com.google.dagger",              name = "hilt-android-compiler",             version.ref = "hilt" }
 androidx-hilt-navigation-compose        = { group = "androidx.hilt",                 name = "hilt-navigation-compose",           version.ref = "hilt-navigation" }
 kotlinx-coroutines-android              = { group = "org.jetbrains.kotlinx",          name = "kotlinx-coroutines-android",        version.ref = "coroutines" }
-kotlinx-coroutines-play-services        = { group = "org.jetbrains.kotlinx",          name = "kotlinx-coroutines-play-services",  version.ref = "coroutines" }
-junit                                   = { group = "junit",                          name = "junit",                             version.ref = "junit" }
+junit                                 = { group = "junit",                          name = "junit",                             version.ref = "junit" }
 kotlinx-coroutines-test                 = { group = "org.jetbrains.kotlinx",          name = "kotlinx-coroutines-test",           version.ref = "coroutines-test" }
 kotlinx-serialization-json             = { group = "org.jetbrains.kotlinx",          name = "kotlinx-serialization-json",        version.ref = "kotlinx-serialization" }
 material                               = { group = "com.google.android.material",   name = "material",                          version.ref = "material" }
@@ -54,4 +52,3 @@ kotlin-compose          = { id = "org.jetbrains.kotlin.plugin.compose",  version
 kotlin-serialization    = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp                     = { id = "com.google.devtools.ksp",             version.ref = "ksp" }
 hilt                    = { id = "com.google.dagger.hilt.android",      version.ref = "hilt" }
-google-services         = { id = "com.google.gms.google-services",      version = "4.4.2" }

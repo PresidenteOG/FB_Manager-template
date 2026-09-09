@@ -1,54 +1,55 @@
 # Architecture
 
-Built an Android app that signs an admin into a Firebase-backed console, lists connected devices
-in real time, and notifies them when a new one shows up — using Kotlin, Jetpack Compose and
-Firebase Realtime Database.
+An admin signs in, lands on the list of every device in the fleet, and can open any one of
+them to change its state or extend its subscription. Each row shows the device's status and
+whether its payment is current, expiring or overdue, and the header keeps a running count of
+each. A second screen per device shows what that device has been listening to.
 
-An admin signs in with email and password, lands on a list of every device registered under the
-Firebase project, and that list updates the moment a device's status changes elsewhere — no
-refresh needed, because it's reading a live `Flow` off the Realtime Database. When a brand-new
-device shows up, the app fires a local notification so the admin doesn't have to be staring at the
-screen to notice.
+Kotlin and Jetpack Compose for the UI. A ViewModel per screen, Room for storage, Hilt to
+wire it together. **Why this stack:** it is what Google recommends for new native Android
+today — Compose instead of XML layouts, Room instead of raw SQLite, Hilt as the standard DI
+option on top of Dagger.
 
-![FB_Manager architecture: Compose UI calls domain interfaces, implemented by AuthRepository and DeviceRepositoryImpl, backed by your own Firebase project](./docs/architecture.png)
+![FB Manager architecture: Compose screens and a ViewModel call a DeviceRepository interface in domain, implemented by DeviceRepositoryImpl over a Room database in data/local; Hilt modules connect the two](./docs/architecture.png)
 
-**Why Kotlin + Jetpack Compose**: this is Google's current recommended stack for native Android —
-Compose replaces the older View/XML layout system with declarative UI, which is what most new
-Android code and most tutorials use today.
+## Layers
 
-## Structure
+MVVM in the UI, a repository boundary underneath it.
 
-Clean-architecture-ish split, MVVM on top:
-
-| Layer | Location | What it does |
+| Layer | Location | What lives there |
 |---|---|---|
-| `domain/` | Plain Kotlin models and repository interfaces — no Android or Firebase imports. |
-| `data/` | Implements those interfaces. `data/auth/AuthRepository` wraps Firebase Auth (email/password). `data/firebase/DeviceRepositoryImpl` listens to the Realtime Database and turns its snapshots into a Kotlin `Flow`. |
-| `di/` | Hilt modules wiring the interfaces to their implementations. |
-| `ui/` | Jetpack Compose screens and ViewModels (e.g. `DeviceListScreen` + `DeviceListViewModel`). |
-| `notification/` | Local notification channel that fires when a new device appears. |
+| `domain/` | `model/DeviceNode`, `repository/DeviceRepository` | Plain Kotlin. The model and the repository interface — no Android, no Room imports. `DeviceNode.paymentStatus` is the one piece of business logic here: it turns an expiry timestamp into active / expiring / overdue / unset. |
+| `data/local/` | `AppDatabase`, `DeviceDao`, `DeviceEntity`, `DeviceRepositoryImpl`, `SeedData` | The Room implementation of `DeviceRepository`. `DeviceEntity` maps to the `devices` table and converts to the domain model; `DeviceRepositoryImpl` exposes the table as a `Flow` and seeds it on first use. |
+| `data/auth/` | `AuthRepository` | Local sign-in. Checks the entered credentials against one hardcoded demo pair and keeps a boolean in `SharedPreferences`. |
+| `di/` | `DatabaseModule`, `RepositoryModule` | Hilt. `DatabaseModule` builds the Room instance and hands out the DAO; `RepositoryModule` binds `DeviceRepositoryImpl` to the `DeviceRepository` interface. |
+| `ui/` | `screens/devices/*`, `theme/`, `navigation/` | Compose. `DeviceListViewModel` holds auth state and the device list; `DeviceListScreen` renders the list, the edit sheet and the per-device data dialog. |
+| `notification/` | `NotificationHelper` | A local notification channel that fires when a row appears in the list that was not there at sign-in. |
 
-## Language / framework breakdown
+## How a change moves through it
+
+Editing a device from the bottom sheet: the sheet calls `DeviceListViewModel.updateDevice`
+with a map of changed fields, the ViewModel forwards it to `DeviceRepository.updateDevice`,
+`DeviceRepositoryImpl` loads the current `DeviceEntity`, copies it with the new values and
+writes it back through the DAO. Room re-emits the `devices` query, the ViewModel's collector
+pushes the new list into its `StateFlow`, and the list recomposes.
+
+## Storage and external services
+
+There are none. The manifest has no `INTERNET` permission. Everything the app shows comes
+from the Room database at `fbm.db`, which is populated from `data/local/SeedData.kt` — 22
+invented devices, all fictional — the first time `DeviceRepositoryImpl` sees an empty table.
+
+## Tech at a glance
 
 | Part | Technology |
 |---|---|
-| UI | Kotlin + Jetpack Compose |
-| State / DI | ViewModel + Hilt |
-| Auth | Firebase Authentication |
-| Data | Firebase Realtime Database, read as a Kotlin `Flow` |
-| Local storage | `EncryptedSharedPreferences` for anything cached on-device |
-
-## Data and external services
-
-This app is built around Firebase — that's the point of it, not something to route around.
-**It ships without a Firebase project of its own.** `app/google-services.json` is gitignored and
-excluded from this template; `app/google-services.json.example` shows the shape Firebase expects.
-Anyone using this template creates their own free Firebase project, drops in their own
-`google-services.json`, and the app talks to their backend instead. See [SETUP.md](./SETUP.md).
+| UI | Kotlin, Jetpack Compose, Material 3 |
+| Screen state / DI | ViewModel, Hilt |
+| Persistence | Room (SQLite), exposed as a `Flow` |
+| Auth | Local check against a demo credential, flag in `SharedPreferences` |
+| Notifications | `NotificationManagerCompat`, one local channel |
 
 ## Running it
 
-Follow [SETUP.md](./SETUP.md) first, then build normally (`./gradlew assembleDebug` or via
-Android Studio). Verified: `./gradlew assembleDebug` compiles and packages a debug APK cleanly
-against a placeholder `google-services.json` matching [SETUP.md](./SETUP.md)'s shape — the code
-itself builds; the only thing missing to run it for real is your own Firebase project.
+See [SETUP.md](./SETUP.md). Verified here: `./gradlew testDebugUnitTest assembleDebug`
+runs the unit tests and packages a debug APK with no additional configuration.

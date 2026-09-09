@@ -5,10 +5,9 @@
 -keep @dagger.hilt.android.AndroidEntryPoint class * { *; }
 -keepnames @dagger.hilt.android.lifecycle.HiltViewModel class *
 
-# Firebase
--keep class com.google.firebase.database.** { *; }
--keep class com.google.firebase.auth.** { *; }
--dontwarn com.google.firebase.**
+# Room
+-keep class * extends androidx.room.RoomDatabase { <init>(); }
+-dontwarn androidx.room.paging.**
 
 # Kotlin serialization
 -keepattributes *Annotation*, InnerClasses

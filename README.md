@@ -1,38 +1,59 @@
-![FB_Manager](./docs/banner.png)
+![FB Manager](./docs/banner.png)
 
-# FB_Manager [TEMPLATE]
+# FB Manager
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=flat&logo=jetpackcompose&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black)
+![Room](https://img.shields.io/badge/Room-3DDC84?style=flat&logo=android&logoColor=white)
 
-An Android console for a Firebase-backed device fleet: sign in, see connected devices update in
-real time, get notified when a new one appears.
+Android admin console for a managed device fleet. Sign in, browse every registered device
+with its state and payment status, open one to rename it, block it or renew its
+subscription, and check the per-device listening data. It was the operator side of a
+music-player product called SoundWave.
 
-## Showcase
+The whole thing runs on-device. There is no backend and no `INTERNET` permission in the
+manifest — the fleet sits in a local Room database that gets seeded with demo data the
+first time the app opens.
 
-Real screenshots from the app running on a physical device, not the Firebase console.
+## Run it
 
-![Sign-in screen: email and password fields under "Iniciar sesión / Administrador Firebase"](./docs/sign-in.jpg) | ![Live validation: "The email address is badly formatted" shown under the password field](./docs/validation-error.jpg) | ![Empty device list: 0 total / 0 active / 0 blocked / 0 expired, "Sin dispositivos registrados"](./docs/empty-state.jpg)
+```
+git clone https://github.com/PresidenteOG/FB_Manager-template.git
+cd FB_Manager-template
+./gradlew assembleDebug        # or open in Android Studio and hit Run
+```
+
+Sign in with the demo admin account:
+
+| Email | Password |
+|---|---|
+| `1234@test.com` | `1234` |
+
+The first launch writes 22 invented devices into the database, spread across every state the
+UI can show — allowed, blocked and pending; payment active, expiring, overdue and unset — so
+the list, the summary counters and the detail screens all have something in them. None of it
+is real customer data.
+
+## Screenshots
+
+From a device running the seeded demo data.
+
+![Sign-in screen](./docs/sign-in.jpg) | ![Device list with the summary counters](./docs/device-list.jpg) | ![Edit sheet for one device](./docs/edit-device.jpg)
 :---:|:---:|:---:
-Sign-in screen | Real-time field validation | Empty device list
+Sign-in | Device list and counters | Edit / renew a device
 
-These three screens run without a live backend behind them, which is why they're the ones shown:
-sign-in, its own input validation, and the list's empty state. The populated device list only
-renders once real devices are talking to a real Firebase project — that's the one screen this
-template can't show without also showing someone's live production data, so it's left out on
-purpose rather than faked or blurred.
-
-## Setup
-
-See [SETUP.md](./SETUP.md) — you'll need your own free Firebase project.
+![Per-device listening data](./docs/device-data.jpg) | ![Payment renewed, badge back to active](./docs/payment-renewed.jpg) | ![Email check on the login form](./docs/validation-error.jpg)
+:---:|:---:|:---:
+Favourites and stats | After renewing a subscription | Login input check
 
 ## Architecture
 
-![FB_Manager architecture: Compose UI calls domain interfaces, implemented by AuthRepository and DeviceRepositoryImpl, backed by your own Firebase project](./docs/architecture.png)
-
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full breakdown.
+Compose UI over a ViewModel, talking to a repository interface in `domain/` that is
+implemented on top of Room in `data/local/`. Hilt wires it together.
+[ARCHITECTURE.md](./ARCHITECTURE.md) has the diagram and the rest of the detail;
+[SETUP.md](./SETUP.md) covers the build prerequisites.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+PolyForm Noncommercial 1.0.0 — see [LICENSE](./LICENSE). Free to read, run and fork for
+personal and non-commercial use.

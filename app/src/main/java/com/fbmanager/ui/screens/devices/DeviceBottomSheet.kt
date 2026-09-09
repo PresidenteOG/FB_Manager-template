@@ -194,7 +194,7 @@ fun DeviceBottomSheet(
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text("¿Eliminar dispositivo?") },
-            text = { Text("Se eliminará '${device.displayName}' de Firebase. Esta acción no se puede deshacer.") },
+            text = { Text("Se eliminará '${device.displayName}' del listado. Esta acción no se puede deshacer.") },
             confirmButton = {
                 TextButton(onClick = { onDelete(); showDeleteConfirm = false }) {
                     Text("Eliminar", color = MaterialTheme.colorScheme.error)

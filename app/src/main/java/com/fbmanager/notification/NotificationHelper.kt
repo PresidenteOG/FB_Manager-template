@@ -20,7 +20,7 @@ object NotificationHelper {
             "Nuevos dispositivos",
             NotificationManager.IMPORTANCE_HIGH,
         ).apply {
-            description = "Alerta cuando un nuevo dispositivo se registra en Firebase"
+            description = "Alerta cuando un nuevo dispositivo aparece en el listado"
         }
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.createNotificationChannel(channel)

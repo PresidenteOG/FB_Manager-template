@@ -63,7 +63,9 @@ class DeviceNodeTest {
         paymentExpiry = paymentExpiry,
         price = price,
         firstSeen = 0L,
+        lastConnected = null,
         tosVersion = null,
         tosAcceptedAt = null,
+        appVersion = null,
     )
 }
