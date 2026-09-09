@@ -18,8 +18,8 @@ first time the app opens.
 ## Run it
 
 ```
-git clone https://github.com/PresidenteOG/FB_Manager-template.git
-cd FB_Manager-template
+git clone https://github.com/PresidenteOG/fiber-device-manager.git
+cd fiber-device-manager
 ./gradlew assembleDebug        # or open in Android Studio and hit Run
 ```
 
