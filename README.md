@@ -36,14 +36,12 @@ is real customer data.
 
 ## Screenshots
 
-From a device running the seeded demo data.
-
-![Sign-in screen](./docs/sign-in.jpg) | ![Login input check](./docs/validation-error.jpg)
-:---:|:---:
-Sign-in | Login input check
-
-<!-- Full walkthrough (device list, edit sheet, listening data, renewed subscription)
-     is being recaptured on a device with the seed loaded. -->
+Not included yet — the app needs an Android device or emulator to run, and the
+screenshots that were here were from an earlier Firebase-backed build, not this
+one, so they have been removed rather than left to mislead. Build and run it with
+the demo account above to see: the sign-in screen, the device list with its
+summary counters, a device detail sheet, the block / rename / renew actions, and
+the per-device listening data.
 
 ## Architecture
 
