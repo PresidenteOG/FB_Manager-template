@@ -1,6 +1,6 @@
-![FB Manager](./docs/banner.png)
+![Fiber Device Manager banner](./docs/banner.png)
 
-# FB Manager
+# Fiber Device Manager
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=flat&logo=jetpackcompose&logoColor=white)
@@ -38,13 +38,12 @@ is real customer data.
 
 From a device running the seeded demo data.
 
-![Sign-in screen](./docs/sign-in.jpg) | ![Device list with the summary counters](./docs/device-list.jpg) | ![Edit sheet for one device](./docs/edit-device.jpg)
-:---:|:---:|:---:
-Sign-in | Device list and counters | Edit / renew a device
+![Sign-in screen](./docs/sign-in.jpg) | ![Login input check](./docs/validation-error.jpg)
+:---:|:---:
+Sign-in | Login input check
 
-![Per-device listening data](./docs/device-data.jpg) | ![Payment renewed, badge back to active](./docs/payment-renewed.jpg) | ![Email check on the login form](./docs/validation-error.jpg)
-:---:|:---:|:---:
-Favourites and stats | After renewing a subscription | Login input check
+<!-- Full walkthrough (device list, edit sheet, listening data, renewed subscription)
+     is being recaptured on a device with the seed loaded. -->
 
 ## Architecture
 
