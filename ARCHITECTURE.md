@@ -10,7 +10,7 @@ wire it together. **Why this stack:** it is what Google recommends for new nativ
 today — Compose instead of XML layouts, Room instead of raw SQLite, Hilt as the standard DI
 option on top of Dagger.
 
-![FB Manager architecture: Compose screens and a ViewModel call a DeviceRepository interface in domain, implemented by DeviceRepositoryImpl over a Room database in data/local; Hilt modules connect the two](./docs/architecture.png)
+![fiber-device-manager architecture: Compose screens and a ViewModel call a DeviceRepository interface in domain, implemented by DeviceRepositoryImpl over a Room database in data/local; Hilt modules connect the two; nothing leaves the device, the manifest has no INTERNET permission](./docs/architecture.png)
 
 ## Layers
 
@@ -36,7 +36,7 @@ pushes the new list into its `StateFlow`, and the list recomposes.
 ## Storage and external services
 
 There are none. The manifest has no `INTERNET` permission. Everything the app shows comes
-from the Room database at `fbm.db`, which is populated from `data/local/SeedData.kt` — 22
+from the Room database at `fbm.db`, which is populated from `data/local/SeedData.kt` — 21
 invented devices, all fictional — the first time `DeviceRepositoryImpl` sees an empty table.
 
 ## Tech at a glance
