@@ -29,19 +29,23 @@ Sign in with the demo admin account:
 |---|---|
 | `1234@test.com` | `1234` |
 
-The first launch writes 22 invented devices into the database, spread across every state the
+The first launch writes 21 invented devices into the database, spread across every state the
 UI can show — allowed, blocked and pending; payment active, expiring, overdue and unset — so
 the list, the summary counters and the detail screens all have something in them. None of it
 is real customer data.
 
 ## Screenshots
 
-Not included yet — the app needs an Android device or emulator to run, and the
-screenshots that were here were from an earlier Firebase-backed build, not this
-one, so they have been removed rather than left to mislead. Build and run it with
-the demo account above to see: the sign-in screen, the device list with its
-summary counters, a device detail sheet, the block / rename / renew actions, and
-the per-device listening data.
+Captured from the debug build running on the demo account. Every screen is on the seed data.
+
+| | |
+|---|---|
+| ![Sign-in screen](./docs/screenshots/login.png) | ![Device list with the summary counters](./docs/screenshots/device-list.png) |
+| The admin sign-in. | The fleet list — total, active, blocked and overdue counts across the top. |
+| ![Devices in different states](./docs/screenshots/device-states.png) | ![Edit sheet for one device](./docs/screenshots/edit-device.png) |
+| Cards colour-code the state: an overdue device is flagged red, paid ones green. | Open a device to rename it, flip allowed / blocked / offline, renew the subscription, or delete it. |
+| ![Per-device listening data](./docs/screenshots/listening-data.png) | |
+| The listening data for that device — minutes, play count, top artists, favourites and recent tracks. | |
 
 ## Architecture
 
