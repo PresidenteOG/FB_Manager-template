@@ -34,18 +34,25 @@ UI can show — allowed, blocked and pending; payment active, expiring, overdue 
 the list, the summary counters and the detail screens all have something in them. None of it
 is real customer data.
 
+## Install
+
+A pre-built APK is attached to the [releases](https://github.com/PresidenteOG/fiber-device-manager/releases) page.
+
 ## Screenshots
 
 Captured from the debug build running on the demo account. Every screen is on the seed data.
 
-| | |
-|---|---|
-| ![Sign-in screen](./docs/screenshots/login.png) | ![Device list with the summary counters](./docs/screenshots/device-list.png) |
-| The admin sign-in. | The fleet list — total, active, blocked and overdue counts across the top. |
-| ![Devices in different states](./docs/screenshots/device-states.png) | ![Edit sheet for one device](./docs/screenshots/edit-device.png) |
-| Cards colour-code the state: an overdue device is flagged red, paid ones green. | Open a device to rename it, flip allowed / blocked / offline, renew the subscription, or delete it. |
-| ![Per-device listening data](./docs/screenshots/listening-data.png) | |
-| The listening data for that device — minutes, play count, top artists, favourites and recent tracks. | |
+![Sign-in screen](./docs/screenshots/login.png) | ![Device list with the summary counters](./docs/screenshots/device-list.png)
+:---:|:---:
+The admin sign-in. | The fleet list — total, active, blocked and overdue counts across the top.
+
+![Devices in different states](./docs/screenshots/device-states.png) | ![Edit sheet for one device](./docs/screenshots/edit-device.png)
+:---:|:---:
+Cards colour-code the state: an overdue device is flagged red, paid ones green. | Open a device to rename it, flip allowed / blocked / offline, renew the subscription, or delete it.
+
+![Per-device listening data](./docs/screenshots/listening-data.png)
+:---:
+The listening data for that device — minutes, play count, top artists, favourites and recent tracks.
 
 ## Architecture
 
